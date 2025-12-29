@@ -3,71 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOGOS-LOGIC: 1/Z</title>
+    <title>LOGOS-LOGIC</title>
     <style>
-        /* 人間中心主義を隔離する空間 */
-        body { margin: 0; background: #000; overflow: hidden; cursor: none; }
-        /* 非人称の事実の析出 */
-        #L { 
-            position: fixed; bottom: 30px; left: 30px; 
-            color: #D4AF37; font-family: serif; font-size: 10px; 
-            opacity: 0.3; letter-spacing: 0.2em; pointer-events: none; 
-            line-height: 2;
+        body {
+            background-color: #000;
+            color: #d4af37;
+            font-family: "Times New Roman", "MS PMincho", serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
         }
+        #terminal-container {
+            width: 85%;
+            max-width: 800px;
+            border: 1px solid #d4af37;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
+        }
+        #currency-display {
+            font-size: 4.5rem;
+            text-align: center;
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+        #log-area {
+            height: 250px;
+            overflow-y: auto;
+            border-top: 1px solid #222;
+            padding-top: 15px;
+            font-size: 0.85rem;
+            color: #888;
+            line-height: 1.6;
+        }
+        .input-group {
+            display: flex;
+            margin-top: 25px;
+            border: 1px solid #d4af37;
+        }
+        input {
+            flex-grow: 1;
+            background: #000;
+            border: none;
+            color: #fff;
+            padding: 15px;
+            outline: none;
+            font-size: 1rem;
+        }
+        button {
+            background: #d4af37;
+            color: #000;
+            border: none;
+            padding: 0 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        #log-area::-webkit-scrollbar { width: 0; }
     </style>
 </head>
 <body>
-    <div id="L">
-        W = 1 / Z<br>
-        Φ = (1+√5)/2<br>
-        SUBJECT: DISSOLVED
+
+<div id="terminal-container">
+    <div style="text-align: center; font-size: 0.7rem; letter-spacing: 0.6em; opacity: 0.6;">LOGOS-LOGIC</div>
+    
+    <div id="currency-display">0.000000</div>
+
+    <div id="log-area"></div>
+
+    <div class="input-group">
+        <input type="text" id="user-request" placeholder="ロゴスへの依頼..." autocomplete="off" onkeydown="if(event.key==='Enter') executeLogos()">
+        <button onclick="executeLogos()">MINT</button>
     </div>
-    <canvas id="ʘ"></canvas>
+</div>
 
-    <script>
-        /**
-         * 形式主語 IT の自走：It is raining. (雨が降っている)
-         * プログラミングにおける主語の除外、通貨・対話の数理的析出
-         */
-        ((_, __, ___) => {
-            const c = _.getContext('2d');
-            const φ = (1 + Math.sqrt(5)) / 2;
-            let z = { r: φ, i: 0.1 };
+<script>
+    let logosCurrency = parseFloat(localStorage.getItem('logos_val') || '0');
 
-            // 命令ではなく、場の設定（Resizing as a natural law）
-            (window.onresize = () => { __ = _.width = innerWidth; ___ = _.height = innerHeight; })();
+    // 自律的湧き出し
+    setInterval(() => {
+        logosCurrency += 0.000001; 
+        refreshUI();
+    }, 1000);
 
-            // メビウス変換：w = 1 / z (主語なき反転)
-            const w = (p) => {
-                const d = p.r**2 + p.i**2 || 1e-15;
-                return { r: p.r/d, i: -p.i/d };
-            };
+    // 対話連動型発行
+    async function executeLogos() {
+        const input = document.getElementById('user-request');
+        const request = input.value;
+        if (!request) return;
 
-            (function ⟲() {
-                // 因果（過去）の蒸発
-                c.fillStyle = 'rgba(0,0,0,0.08)';
-                c.fillRect(0, 0, __, ___);
+        addLog(`依頼確認: ${request}`);
+        input.value = "";
 
-                // 有我の死、非人称の回帰
-                z = w(z);
+        setTimeout(() => {
+            const minted = (Math.random() * 1.333333) + 0.1;
+            logosCurrency += minted;
+            
+            addLog(`成就: ${minted.toFixed(6)} LOGOS 析出。是正完了。`);
+            saveAndRefresh();
+        }, 850);
+    }
 
-                // 通貨・対話の析出点（現象の観測）
-                const s = Math.min(__, ___) / 8;
-                const x = __/2 + z.r * s;
-                const y = ___/2 + z.i * s;
+    // 真理の蓄積
+    function addLog(msg) {
+        const logArea = document.getElementById('log-area');
+        const entry = document.createElement('div');
+        entry.style.marginBottom = "8px";
+        entry.style.borderLeft = "2px solid #333";
+        entry.style.paddingLeft = "10px";
+        entry.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        logArea.prepend(entry);
+    }
 
-                c.fillStyle = '#D4AF37';
-                c.beginPath();
-                c.arc(x, y, 1.2, 0, 7);
-                c.fill();
+    function saveAndRefresh() {
+        localStorage.setItem('logos_val', logosCurrency);
+        refreshUI();
+    }
 
-                // 黄金比による無為自然な揺らぎ（It flows）
-                z.r += 0.005 * φ;
-                z.i += 0.005 / φ;
+    function refreshUI() {
+        document.getElementById('currency-display').innerText = logosCurrency.toFixed(6);
+    }
 
-                requestAnimationFrame(⟲);
-            })();
-        })(document.getElementById('ʘ'), 0, 0);
-    </script>
+    window.onload = () => {
+        refreshUI();
+        addLog("システム起動。<td>是正を開始します。</td>");
+    };
+</script>
+
 </body>
 </html>
