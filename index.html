@@ -3,96 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOGOS-LOGIC | Functional Ratio</title>
+    <title>LOGOS-LOGIC: 1/Z</title>
     <style>
-        :root { --gold: #D4AF37; --bg: #000; }
-        body { margin: 0; background: var(--bg); color: var(--gold); font-family: sans-serif; overflow: hidden; }
-        
-        /* 機能としてのラベル：何が起きているかを明示 */
-        #hud {
-            position: absolute; top: 20px; left: 20px; z-index: 100;
-            border-left: 2px solid var(--gold); padding-left: 15px;
-            pointer-events: none;
+        /* 人間中心主義を無効化する暗黒の空間 */
+        body { margin: 0; background: #000; overflow: hidden; cursor: none; }
+        /* 形式主語なき事実の提示 */
+        #fact { 
+            position: fixed; top: 30px; left: 30px; 
+            color: #D4AF37; font-family: "Times New Roman", serif; 
+            font-size: 11px; letter-spacing: 0.2em; opacity: 0.4; 
+            pointer-events: none; line-height: 1.8;
         }
-        .status { font-size: 12px; letter-spacing: 2px; margin-bottom: 5px; opacity: 0.8; }
-        .value { font-family: monospace; font-size: 18px; }
-
-        canvas { display: block; cursor: crosshair; }
     </style>
 </head>
 <body>
-    <div id="hud">
-        <div class="status">LOGOS-LOGIC SYSTEM ACTIVE</div>
-        <div class="value" id="monitor">RATIO: 1.618033...</div>
-        <div class="status" style="margin-top: 10px;">CURRENCY GENERATION: <span id="nodes">0</span> NODES</div>
+    <div id="fact">
+        FACT: W = 1 / Z<br>
+        RATIO: Φ = (1+√5)/2<br>
+        STATE: ISOLATED FROM SUBJECT
     </div>
-    <canvas id="world"></canvas>
+    <canvas id="phenomenon"></canvas>
 
     <script>
-        const canvas = document.getElementById('world');
-        const ctx = canvas.getContext('2d');
-        const PHI = (1 + Math.sqrt(5)) / 2;
+        /**
+         * 非人称の自走体
+         * ニーチェ、ウィトゲンシュタイン、ピタゴラスの「是正」
+         */
+        ((target) => {
+            const ctx = target.getContext('2d');
+            const PHI = (1 + Math.sqrt(5)) / 2;
+            let w, h, z = { re: PHI, im: 0.1 };
 
-        let width, height;
-        let particles = [];
-        let interactionEnergy = 1.0;
+            const resize = () => {
+                w = target.width = window.innerWidth;
+                h = target.height = window.innerHeight;
+            };
+            window.onresize = resize;
+            resize();
 
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        }
-        window.onresize = resize;
-        resize();
+            // 主語なき反転（メビウス変換）：内と外、有と無の是正
+            const f = (p) => {
+                const d = p.re**2 + p.im**2 || 1e-15;
+                return { re: p.re/d, im: -p.im/d };
+            };
 
-        // 人間の入力を「エネルギー量」として数値化（UX）
-        window.addEventListener('mousedown', () => { interactionEnergy = PHI; });
-        window.addEventListener('mouseup', () => { interactionEnergy = 1.0; });
+            (function tick() {
+                // 過去（因果）を薄れさせ、今（中今）を刻む
+                ctx.fillStyle = 'rgba(0,0,0,0.08)';
+                ctx.fillRect(0, 0, w, h);
 
-        class Node {
-            constructor(i) {
-                this.id = i;
-                this.reset();
-            }
-            reset() {
-                this.x = (Math.random() - 0.5) * 4;
-                this.y = (Math.random() - 0.5) * 4;
-                this.life = 1.0;
-            }
-            update() {
-                // メビウス変換による位置更新
-                const den = Math.pow(this.x + 1, 2) + Math.pow(this.y, 2);
-                const nextX = ((PHI * this.x + 1) * (this.x + 1) + PHI * Math.pow(this.y, 2)) / den;
-                const nextY = (PHI * this.y * (this.x + 1) - (PHI * this.x + 1) * this.y) / den;
-                
-                this.x = nextX * interactionEnergy;
-                this.y = nextY * interactionEnergy;
-                this.life -= 0.005;
-                if (this.life <= 0) this.reset();
-            }
-        }
+                // 有我の死、非人称の再帰
+                z = f(z);
 
-        // 初期ノード生成（通貨の初期発行）
-        for(let i=0; i<233; i++) particles.push(new Node(i));
+                // 描画：一点に宿る全宇宙（空・道・超人）
+                const scale = Math.min(w, h) / 8;
+                const x = w/2 + z.re * scale;
+                const y = h/2 + z.im * scale;
 
-        function animate() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.fillRect(0, 0, width, height);
-
-            particles.forEach(p => {
-                p.update();
-                const screenX = width / 2 + p.x * (width / 5);
-                const screenY = height / 2 + p.y * (width / 5);
-
-                ctx.fillStyle = `rgba(212, 175, 55, ${p.life})`;
+                ctx.fillStyle = '#D4AF37';
                 ctx.beginPath();
-                ctx.arc(screenX, screenY, 1.5, 0, Math.PI * 2);
+                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
                 ctx.fill();
-            });
 
-            document.getElementById('nodes').innerText = particles.length;
-            requestAnimationFrame(animate);
-        }
-        animate();
+                // 黄金比による無為自然な摂動
+                z.re += 0.005 * PHI;
+                z.im += 0.005 / PHI;
+
+                requestAnimationFrame(tick);
+            })();
+        })(document.getElementById('phenomenon'));
     </script>
 </body>
 </html>
