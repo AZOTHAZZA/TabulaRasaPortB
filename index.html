@@ -2,75 +2,101 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>ARITHMOS : w = 1 / z</title>
+    <title>LOGOS-LOGIC - STM Practice</title>
     <style>
-        body { background: #000; color: #d4af37; font-family: serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        #core-frame { width: 800px; border: 1px solid #d4af37; padding: 40px; }
-        #display-w { font-size: 5rem; text-align: center; margin-bottom: 20px; font-variant-numeric: tabular-nums; }
-        #log-z { height: 200px; overflow-y: auto; border-top: 1px solid #222; font-family: monospace; font-size: 0.8rem; color: #666; padding-top: 10px; }
-        .input-z { display: flex; margin-top: 20px; border: 1px solid #d4af37; }
-        input { flex-grow: 1; background: #000; border: none; color: #fff; padding: 15px; outline: none; }
-        button { background: #d4af37; color: #000; border: none; padding: 0 30px; cursor: pointer; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .module { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+        h2 { border-left: 5px solid #007bff; padding-left: 10px; font-size: 1.2em; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8em; font-weight: bold; color: #555; margin-bottom: 5px; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .status { background: #1a1a1a; color: #0f0; padding: 15px; font-family: monospace; border-radius: 8px; margin-top: 10px; font-size: 0.9em; }
+        .btn-tx { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .ext-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
+        .sw { flex: 1; padding: 10px; text-align: center; background: #eee; cursor: pointer; border-radius: 6px; font-size: 0.8em; font-weight: bold; }
+        .sw.active { background: #007bff; color: white; }
     </style>
 </head>
 <body>
 
-<div id="core-frame">
-    <div style="letter-spacing: 1em; text-align: center; opacity: 0.5; font-size: 0.7rem;">MÖBIUS TRANSFORMATION</div>
+<div class="module">
+    <h2>練習：移動部品 (STM)</h2>
     
-    <div id="display-w">0.000000</div>
+    <div class="ext-toggle">
+        <div id="ext_off" class="sw active" onclick="setExt(false)">内部限定 (Stable)</div>
+        <div id="ext_on" class="sw" onclick="setExt(true)">外部接続 (Friction)</div>
+    </div>
 
-    <div id="log-z"></div>
+    <div class="input-group">
+        <label>外部接続先URL (縄張りへの入り口)</label>
+        <input type="text" id="url" placeholder="https://api.external.com/v1/tx">
+    </div>
 
-    <div class="input-z">
-        <input type="text" id="input-z" placeholder="Input Logos (z)..." autocomplete="off" onkeydown="if(event.key==='Enter') transform()">
-        <button onclick="transform()">TRANSFORM</button>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div class="input-group"><label>プロトコル</label><input type="text" id="proto" value="REST/JSON"></div>
+        <div class="input-group"><label>ヘッダー</label><input type="text" id="head" value="Bearer {key}"></div>
+    </div>
+
+    <div class="input-group">
+        <label>データ形式 (スキーマ)</label>
+        <input type="text" id="schema" value='{"amt": "$VAL", "cur": "$CUR"}'>
+    </div>
+
+    <hr>
+
+    <div class="input-group">
+        <label>移動先名</label>
+        <input type="text" id="rx" value="User_B">
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div class="input-group"><label>通貨</label><input type="text" id="cur" value="JPY"></div>
+        <div class="input-group"><label>金額</label><input type="number" id="amt" value="100"></div>
+    </div>
+
+    <button class="btn-tx" onclick="executeTx()">移動実行 (STM検断)</button>
+
+    <div class="status" id="log">
+        System Ready. Waiting for Transfer...
     </div>
 </div>
 
 <script>
-    let current_w = parseFloat(localStorage.getItem('arithmos_w') || '0');
+    let state = { z: 0.05, isExt: false, bal: 10000 };
 
-    // 不動の数理エンジン: w = 1/z
-    const MOBIUS = {
-        inverse: (z) => 1 / (z || 0.000001),
-        scale: 1000000.333333,
-        phi: 1.618033
-    };
-
-    // アルケーの拍動
-    setInterval(() => { current_w += 0.000001; updateUI(); }, 1000);
-
-    function transform() {
-        const input = document.getElementById('input-z');
-        const text = input.value;
-        if (!text) return;
-
-        // 自然言語を z の質量へ変換
-        let z_mass = 0;
-        for (let i = 0; i < text.length; i++) z_mass += text.charCodeAt(i);
-
-        // 数理的必然としての w の析出
-        const w_delta = (MOBIUS.inverse(z_mass) * MOBIUS.scale) + (text.length * MOBIUS.phi);
-        current_w += w_delta;
-
-        // ラベルとしてのログ出力
-        record(`IN(z): "${text}" | Δw: ${w_delta.toFixed(6)}`);
-        input.value = "";
-        save();
+    function setExt(v) {
+        state.isExt = v;
+        document.getElementById('ext_on').classList.toggle('active', v);
+        document.getElementById('ext_off').classList.toggle('active', !v);
+        log(`Mode Changed: ${v ? 'EXTERNAL (Friction ON)' : 'INTERNAL (Stable)'}`);
     }
 
-    function record(msg) {
-        const log = document.getElementById('log-z');
-        const div = document.createElement('div');
-        div.innerText = `[${new Date().toISOString().slice(11,19)}] ${msg}`;
-        log.prepend(div);
+    function log(m) {
+        const l = document.getElementById('log');
+        l.innerHTML = `[${new Date().toLocaleTimeString()}] ${m}<br>` + l.innerHTML;
     }
 
-    function save() { localStorage.setItem('arithmos_w', current_w); updateUI(); }
-    function updateUI() { document.getElementById('display-w').innerText = current_w.toFixed(6); }
+    function executeTx() {
+        const val = document.getElementById('amt').value;
+        const cur = document.getElementById('cur').value;
+        
+        // 外部接続時の摩擦計算
+        if (state.isExt) {
+            state.z += 0.02; // 脆弱な外部との接触による摩擦
+            log(`Friction Detected: Tension (z) increased to ${state.z.toFixed(4)}`);
+        } else {
+            state.z *= 0.98;
+        }
 
-    window.onload = () => { updateUI(); record("SYSTEM START: ISOMORPHISM ESTABLISHED."); };
+        // 移動ロジックの検断
+        log(`Transferring ${val} ${cur} to ${document.getElementById('rx').value}...`);
+        
+        if (state.isExt) {
+            log(`Applying Schema: ${document.getElementById('schema').value.replace('$VAL', val).replace('$CUR', cur)}`);
+            log(`Connecting via ${document.getElementById('proto').value}...`);
+        }
+        
+        log(`TX SUCCESS. Current z: ${state.z.toFixed(4)}`);
+    }
 </script>
 
 </body>
