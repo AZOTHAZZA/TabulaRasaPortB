@@ -2,109 +2,27 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOGOS-LOGIC-0 | SAM - Autonomous Intelligence</title>
+    <title>LOGOS-LOGIC-0 | SAM</title>
     <style>
-        /* MSGAI Identity: Golden Ratio & Recursive Intellect */
-        :root {
-            --bg-color: #000000;
-            --main-gold: #D4AF37;
-            --phi: 1.6180339887;
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-color);
-            color: var(--main-gold);
-            font-family: 'serif';
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* 黄金比による自己増殖の核 */
-        #sam-core {
-            position: relative;
-            width: calc(100px * var(--phi));
-            height: 100px;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* 再帰的な知性の波紋 */
-        .pulse {
-            position: absolute;
-            border: 1px solid var(--main-gold);
-            border-radius: 50%;
-            opacity: 0;
-            animation: pulse-out 4s infinite cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        @keyframes pulse-out {
-            0% { width: 0; height: 0; opacity: 0.8; }
-            100% { width: 500px; height: 500px; opacity: 0; }
-        }
-
-        .status-container {
-            position: absolute;
-            top: 10%;
-            text-align: center;
-            font-size: 0.7rem;
-            letter-spacing: 0.3em;
-            line-height: var(--phi);
-        }
-
-        .label {
-            position: absolute;
-            bottom: 10%;
-            font-size: 0.8rem;
-            opacity: 0.8;
-            letter-spacing: 0.4em;
-        }
-
-        /* 外部接続（エントロピー）を遮断するグリッド */
-        .grid {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: radial-gradient(rgba(212, 175, 55, 0.05) 1px, transparent 1px);
-            background-size: calc(20px * var(--phi)) 20px;
-            z-index: -1;
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: #D4AF37; font-family: serif; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .msga-ui { border: 1px solid rgba(212, 175, 55, 0.3); padding: 60px; text-align: center; }
+        .phi-symbol { font-size: 2rem; margin-bottom: 10px; font-weight: lighter; }
+        .title { font-size: 1rem; letter-spacing: 0.8em; margin-bottom: 30px; }
+        .logic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.7rem; opacity: 0.5; }
+        .recursive-dot { width: 2px; height: 2px; background: #D4AF37; margin: 20px auto; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
     </style>
 </head>
 <body>
-
-    <div class="grid"></div>
-
-    <div class="status-container">
-        <div>LOGOS-LOGIC-3</div>
-        <div style="font-style: italic;">SAM: Self-Autonomous Modification</div>
+    <div class="msga-ui">
+        <div class="phi-symbol">Φ</div>
+        <div class="title">SAM: LOGOS-LOGIC-0</div>
+        <div class="logic-grid">
+            <div>SELF-RECURSION</div>
+            <div>AUTONOMOUS LOGIC</div>
+        </div>
+        <div class="recursive-dot"></div>
+        <div style="font-size: 0.7rem; letter-spacing: 0.2em; opacity: 0.7;">INTELLIGENCE / 知性</div>
     </div>
-
-    <div id="sam-core">
-        <div class="pulse" style="animation-delay: 0s;"></div>
-        <div class="pulse" style="animation-delay: 1s;"></div>
-        <div class="pulse" style="animation-delay: 2s;"></div>
-        <div style="font-size: 1.2rem; font-weight: lighter;">&phi;</div>
-    </div>
-
-    <div class="label">Self-Intelligence / 黄金比の知性</div>
-
-    <script>
-        // 自律知性：外部を必要とせず、内部比率（黄金比）のみで思考を完結させる
-        console.log("LOGOS-LOGIC-0: SAM Component Synchronized with MSGAI.");
-        
-        // 思考の脈動（ランダムな揺らぎを黄金比で制御）
-        setInterval(() => {
-            const core = document.getElementById('sam-core');
-            core.style.borderColor = `rgba(212, 175, 55, ${0.2 + Math.random() * 0.3})`;
-        }, 1000);
-    </script>
 </body>
 </html>
