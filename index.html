@@ -40,7 +40,11 @@ input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px sol
         <div class="brand" id="brand-display">PURE PORT B</div>
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
-        <select id="ui-tone" onchange="applyTheme(true)" style="width:auto; margin:0; font-size:0.65rem; background:#000; color:#fff; border:1px solid #333;"></select>
+        <select id="ui-tone" onchange="applyTheme(true)" style="width:auto; margin:0; font-size:0.65rem; background:#000; color:#fff; border:1px solid #333;">
+            <option value="neutral">Neutral Tone</option>
+            <option value="logical">Logical Tone</option>
+            <option value="universal">Universal Tone</option>
+        </select>
         <select id="ui-lang" onchange="updateLabels()" style="width:auto; margin:0; font-size:0.65rem; background:#000; color:#fff; border:1px solid #333;">
             <option value="en">English</option>
             <option value="jp" selected>日本語</option>
@@ -80,6 +84,10 @@ input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px sol
                 <div class="data-node"><div class="label" data-key="label_w"></div><div class="value" id="w-val">0</div></div>
             </div>
         </div>
+        <div class="card">
+            <div class="card-title" data-key="title_reset">RESET</div>
+            <button class="btn btn-danger" onclick="executeClean()" data-key="btn_reset">Reset Port</button>
+        </div>
     </section>
 </main>
 
@@ -88,8 +96,8 @@ const COLOR_SYSTEM=["PURE","USD","JPY","EUR","BTC","ETH","MATIC"];
 const PHI=1.618;
 const TONES = {
     neutral: { bg: "#05070a", surface: "#0d1117", accent: "#4a5568", text: "#cbd5e0", border: "#1a202c" },
-    logical: { bg: "#020408", surface: "#080c12", accent: "#2d3748", text: "#a0aec0", border: "#1a202c" },
-    universal: { bg: "#0f0d0b", surface: "#1a1612", accent: "#744210", text: "#ed8936", border: "#2d241e" }
+    logical: { bg: "#050a0f", surface: "#0a141e", accent: "#007bff", text: "#a0d1ff", border: "#1a3a5a" },
+    universal: { bg: "#1a1612", surface: "#2a241e", accent: "#d4a017", text: "#fff4e0", border: "#4a3f35" }
 };
 
 const DICTIONARY = {
@@ -99,17 +107,17 @@ const DICTIONARY = {
         btn_scan: "CHECK ARRIVAL", 
         label_z: "z-tension", label_w: "w-Logos",
         door_idle: "Status: WAITING FOR ARRIVAL",
-        brands: { neutral: "PURE PORT B", logical: "COLD MONITOR", universal: "UNIVERSE MIRROR" },
-        tones: { neutral: "Observer Tone", logical: "Cold Tone", universal: "Aether Tone" }
+        title_reset: "RESET", btn_reset: "Reset Port",
+        brands: { neutral: "PURE PORT B", logical: "PURE PORT B", universal: "PURE PORT B" }
     },
     jp: { 
-        super_title: "タブラ・ラサ", tab_canvas: "港 B (PORT B)", tab_book: "公文書", tab_status: "外部状態", 
+        super_title: "タブラ・ラサ", tab_canvas: "港 B (PORT B)", tab_book: "公文書", tab_status: "状態", 
         title_canvas: "港 (PORT)", title_arrival: "入港 (Arrival) / 積み下ろし (Devanning)", title_book: "公文書記録", title_status: "港湾状態", title_sync_status: "物流の状態",
         btn_scan: "入港を確認", 
         label_z: "z-緊張", label_w: "w-数理",
         door_idle: "状態: 船の到着を待機中",
-        brands: { neutral: "PURE PORT B", logical: "冷徹なモニター", universal: "宇宙の鏡" },
-        tones: { neutral: "観測者トーン", logical: "冷徹トーン", universal: "エーテルトーン" }
+        title_reset: "初期化", btn_reset: "港をリセット",
+        brands: { neutral: "PURE PORT B", logical: "PURE PORT B", universal: "PURE PORT B" }
     }
 };
 
@@ -135,16 +143,9 @@ function updateLabels() {
         const k = el.getAttribute('data-key');
         if(d[k]) el.textContent = d[k];
     });
-    updateSelect('ui-tone', d.tones, studio.tone);
     document.getElementById('door-status').textContent = d.door_idle;
     applyTheme(false);
     updateUI();
-}
-
-function updateSelect(id, list, current) {
-    const sel = document.getElementById(id);
-    if(!sel) return; sel.innerHTML = '';
-    Object.keys(list).forEach(key => { sel.add(new Option(list[key], key)); if(key===current) sel.value=key; });
 }
 
 function updateUI() {
@@ -191,6 +192,14 @@ async function processIncomingLetter() {
     }
 }
 
+function executeClean() {
+    if(!confirm(studio.lang==='jp'?"港をリセットしますか？":"Reset Port?")) return;
+    studio.scenery = Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0]));
+    studio.tension = 0.05;
+    studio.chronicles = [];
+    save(); updateUI();
+}
+
 window.addEventListener('storage', (e) => {
     if (e.key === 'TR_Bridge_to_Plus') {
         processIncomingLetter();
@@ -205,6 +214,7 @@ function writeChronicle(msg){
 
 document.addEventListener('DOMContentLoaded', () => { 
     document.getElementById('ui-lang').value = studio.lang;
+    document.getElementById('ui-tone').value = studio.tone;
     updateLabels(); 
     processIncomingLetter();
 });
