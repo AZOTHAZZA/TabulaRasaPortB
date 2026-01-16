@@ -2,14 +2,11 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tabula Rasa - PORT B</title>
+<title>Tabula Rasa - PURE PORT B</title>
 <style>
-:root { 
-    --ratio: 1.618; 
-    --bg: #05070a; --surface: #0d1117; --accent: #4a5568; --text: #cbd5e0; --border: #1a202c;
-    --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-body { font-family: 'Inter', 'Noto Sans JP', sans-serif; margin: 0; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background var(--transition); }
+/* スタイル設定は A と共通 */
+:root { --ratio: 1.618; --bg: #05070a; --surface: #0d1117; --accent: #4a5568; --text: #cbd5e0; --border: #1a202c; --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+body { font-family: 'Inter', 'Noto Sans JP', sans-serif; margin: 0; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 header { background: #000; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); flex-shrink: 0; }
 .brand-group { display: flex; flex-direction: column; }
 .super-title { font-size: 0.55rem; color: var(--accent); letter-spacing: 0.4em; font-weight: 300; line-height: 1; margin-bottom: 4px; }
@@ -27,9 +24,10 @@ nav { display: flex; background: #000; border-bottom: 1px solid #333; flex-shrin
 .label { font-size: 0.6rem; color: #768390; margin-bottom: 4px; }
 .value { font-family: monospace; font-weight: bold; font-size: 1rem; color: var(--text); }
 input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #444; border-radius: 6px; background: rgba(0,0,0,0.3); color: #fff; font-size: 0.8rem; outline: none; box-sizing: border-box;}
-.btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75rem; transition: 0.2s; outline: none; }
+.btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75rem; transition: 0.2s; outline: none; margin-top: 5px;}
 .btn-neutral { background: var(--accent); color: #fff; }
 .btn-danger { background: #a71d2a; color: #fff; }
+.btn-bridge { background: #4a3f35; color: #d4a017; border: 1px solid #d4a017; }
 #chronicle-box { background: rgba(0,0,0,0.3); color: var(--text); padding: 15px; font-family: 'Georgia', serif; font-size: 0.85rem; height: 300px; overflow-y: auto; border-radius: 6px; border: 1px solid var(--border); line-height: 1.6; }
 </style>
 </head>
@@ -37,10 +35,10 @@ input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px sol
 <header>
     <div class="brand-group">
         <div class="super-title" data-key="super_title">TABULA RASA</div>
-        <div class="brand" id="brand-display">PURE PORT B</div>
+        <div class="brand" data-key="brand_port_b">PURE PORT B</div>
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
-        <select id="ui-tone" onchange="applyTheme(true)" style="width:auto; margin:0; font-size:0.65rem; background:#000; color:#fff; border:1px solid #333;">
+        <select id="ui-tone" onchange="applyTheme()" style="width:auto; margin:0; font-size:0.65rem; background:#000; color:#fff; border:1px solid #333;">
             <option value="neutral">Neutral Tone</option>
             <option value="logical">Logical Tone</option>
             <option value="universal">Universal Tone</option>
@@ -52,41 +50,53 @@ input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px sol
     </div>
 </header>
 <nav id="main-nav">
-    <button class="tab active" id="btn-canvas" onclick="showPane('canvas')" data-key="tab_canvas"></button>
-    <button class="tab" id="btn-book" onclick="showPane('book')" data-key="tab_book"></button>
-    <button class="tab" id="btn-status" onclick="showPane('status')" data-key="tab_status"></button>
+    <button class="tab active" id="btn-canvas" onclick="showPane('canvas')" data-key="tab_canvas">港 B (ポートB)</button>
+    <button class="tab" id="btn-book" onclick="showPane('book')" data-key="tab_book">公文書</button>
+    <button class="tab" id="btn-status" onclick="showPane('status')" data-key="tab_status">状態</button>
 </nav>
 <main id="viewport">
     <section id="pane-canvas" class="pane active">
-        <div class="card"><div class="card-title" data-key="title_canvas"></div><div class="grid" id="scenery-display"></div></div>
+        <div class="card"><div class="card-title" data-key="title_canvas">港 (ポート)</div><div class="grid" id="scenery-display"></div></div>
         
-        <div class="card">
-            <div class="card-title" data-key="title_arrival">ARRIVAL</div>
-            <p id="door-status" style="font-size:0.7rem; color:var(--accent); margin-bottom:15px; font-family:monospace;"></p>
-            <button class="btn btn-neutral" data-key="btn_scan" onclick="processIncomingLetter()">CHECK ARRIVAL</button>
-        </div>
-
-        <div class="card">
-            <div class="card-title" data-key="title_sync_status">LOGISTICS STATUS</div>
-            <p id="sync-msg" style="font-size:0.7rem; color:var(--accent); font-family:monospace;">Waiting for Sailing from PORT A...</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+            <div class="card">
+                <div class="card-title" data-key="title_vanning">積み込み (ヴァンニング)</div>
+                <select id="color-choice"></select>
+                <div class="label" data-key="label_intensity">数量</div>
+                <input type="number" id="brush-intensity" value="100">
+                <button class="btn btn-neutral" data-key="btn_paint_plus" onclick="paintOnCanvas(1)">積み込み (ヴァンニング)</button>
+                <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                <div class="card-title" data-key="title_sailing">出港 (セーリング)</div>
+                <div class="label" data-key="label_destination">移動先: 港 A (ポートA)</div>
+                <button class="btn btn-bridge" onclick="transferToPortA()" data-key="btn_sailing">出港する (セーリング)</button>
+            </div>
+            
+            <div class="card">
+                <div class="card-title" data-key="title_arrival">入港 (アライバル)</div>
+                <div id="arrival-status" class="data-node" style="margin-bottom:10px;">
+                    <div class="label" data-key="label_waiting">待機中の荷物</div>
+                    <div id="incoming-packet-info" class="value" data-key="val_none">なし</div>
+                </div>
+                <button id="btn-devanning" class="btn btn-neutral" onclick="checkAndDevan()" data-key="btn_arrival_check">入港確認 / 積み下ろし</button>
+            </div>
         </div>
     </section>
 
     <section id="pane-book" class="pane">
-        <div class="card"><div class="card-title" data-key="title_book"></div><div id="chronicle-box"></div></div>
+        <div class="card"><div class="card-title" data-key="title_book">公文書記録</div><div id="chronicle-box"></div></div>
     </section>
 
     <section id="pane-status" class="pane">
         <div class="card">
-            <div class="card-title" data-key="title_status">PORT STATUS</div>
+            <div class="card-title" data-key="title_status">港の状態</div>
             <div class="grid">
-                <div class="data-node"><div class="label" data-key="label_z"></div><div class="value" id="z-val">0</div></div>
-                <div class="data-node"><div class="label" data-key="label_w"></div><div class="value" id="w-val">0</div></div>
+                <div class="data-node"><div class="label" data-key="label_z">zの状態</div><div class="value" id="z-val">0</div></div>
+                <div class="data-node"><div class="label" data-key="label_w">wの状態</div><div class="value" id="w-val">0</div></div>
             </div>
         </div>
         <div class="card">
-            <div class="card-title" data-key="title_reset">RESET</div>
-            <button class="btn btn-danger" onclick="executeClean()" data-key="btn_reset">Reset Port</button>
+            <div class="card-title" data-key="title_reset">港の掃除</div>
+            <button class="btn btn-danger" onclick="executeClean()" data-key="btn_reset">港を掃除する</button>
         </div>
     </section>
 </main>
@@ -102,38 +112,52 @@ const TONES = {
 
 const DICTIONARY = {
     en: { 
-        super_title: "TABULA RASA", tab_canvas: "PORT B", tab_book: "ARCHIVE", tab_status: "STATS", 
-        title_canvas: "PORT", title_arrival: "ARRIVAL & DEVANNING", title_book: "EXTERNAL RECORD", title_status: "PORT STATUS", title_sync_status: "LOGISTICS STATUS",
-        btn_scan: "CHECK ARRIVAL", 
-        label_z: "z-tension", label_w: "w-Logos",
-        door_idle: "Status: WAITING FOR ARRIVAL",
-        title_reset: "RESET", btn_reset: "Reset Port",
-        brands: { neutral: "PURE PORT B", logical: "PURE PORT B", universal: "PURE PORT B" }
+        super_title: "TABULA RASA", brand_port_b: "PURE PORT B",
+        tab_canvas: "PORT B", tab_book: "ARCHIVE", tab_status: "STATUS", 
+        title_canvas: "PORT", title_vanning: "Vanning", label_z: "z-Status", label_w: "w-Status",
+        btn_paint_plus: "VANNING", label_intensity: "Quantity",
+        title_sailing: "Sailing", label_destination: "Destination: PORT A", btn_sailing: "Sailing",
+        title_arrival: "Arrival", label_waiting: "Waiting Cargo", val_none: "None", btn_arrival_check: "Check Arrival / Devanning",
+        title_book: "EXTERNAL RECORD", title_status: "PORT STATUS", title_reset: "CLEAN PORT", btn_reset: "Clean Port"
     },
     jp: { 
-        super_title: "タブラ・ラサ", tab_canvas: "港 B (PORT B)", tab_book: "公文書", tab_status: "状態", 
-        title_canvas: "港 (PORT)", title_arrival: "入港 (Arrival) / 積み下ろし (Devanning)", title_book: "公文書記録", title_status: "港湾状態", title_sync_status: "物流の状態",
-        btn_scan: "入港を確認", 
-        label_z: "z-緊張", label_w: "w-数理",
-        door_idle: "状態: 船の到着を待機中",
-        title_reset: "初期化", btn_reset: "港をリセット",
-        brands: { neutral: "PURE PORT B", logical: "PURE PORT B", universal: "PURE PORT B" }
+        super_title: "タブラ・ラサ", brand_port_b: "ピュア・ポートB",
+        tab_canvas: "港 B (ポートB)", tab_book: "公文書", tab_status: "状態", 
+        title_canvas: "港 (ポート)", title_vanning: "積み込み (ヴァンニング)", label_z: "zの状態", label_w: "wの状態",
+        btn_paint_plus: "積み込み (ヴァンニング)", label_intensity: "数量",
+        title_sailing: "出港 (セーリング)", label_destination: "移動先: 港 A (ポートA)", btn_sailing: "出港する (セーリング)",
+        title_arrival: "入港 (アライバル)", label_waiting: "待機中の荷物", val_none: "なし", btn_arrival_check: "入港確認 / 積み下ろし (デヴァンニング)",
+        title_book: "公文書記録", title_status: "港の状態", title_reset: "港の掃除", btn_reset: "港を掃除する"
     }
 };
 
-let studio = JSON.parse(localStorage.getItem('tabula_rasa_plus_v74_pure')) || { 
+let studio = JSON.parse(localStorage.getItem('tabula_rasa_port_b_v8')) || { 
     tension: 0.05, scenery: Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0])), tone: 'neutral', lang: 'jp', chronicles: []
 };
 
-function save() { localStorage.setItem('tabula_rasa_plus_v74_pure', JSON.stringify(studio)); }
+function save() { localStorage.setItem('tabula_rasa_port_b_v8', JSON.stringify(studio)); }
 
-function applyTheme(isManual = false) {
-    if(isManual) studio.tone = document.getElementById('ui-tone').value;
-    const theme = TONES[studio.tone];
-    const root = document.documentElement;
-    Object.keys(theme).forEach(key => root.style.setProperty(`--${key}`, theme[key]));
-    document.getElementById('brand-display').textContent = DICTIONARY[studio.lang].brands[studio.tone];
-    save();
+function updateUI() {
+    document.getElementById('z-val').textContent = studio.tension.toFixed(6);
+    document.getElementById('w-val').textContent = (PHI/(studio.tension||0.001)).toFixed(2);
+    document.getElementById('scenery-display').innerHTML = COLOR_SYSTEM.map(c => `
+        <div class="data-node">
+            <div class="label">${c}</div>
+            <div class="value">${(studio.scenery[c]||0).toFixed(4)}</div>
+        </div>`).join('');
+    document.getElementById('chronicle-box').innerHTML = (studio.chronicles || []).map(c => `<p><i>[${c.t}]</i> ${c.m}</p>`).reverse().join('');
+    
+    // 入港確認 (PORT Aからの荷物をチェック)
+    const incoming = localStorage.getItem('TR_Bridge_to_B');
+    const infoBox = document.getElementById('incoming-packet-info');
+    if (incoming) {
+        const p = JSON.parse(incoming);
+        infoBox.textContent = `${p.amount} ${p.unit} (from ${p.sender})`;
+        infoBox.style.color = "var(--accent)";
+    } else {
+        infoBox.textContent = studio.lang === 'jp' ? "なし" : "None";
+        infoBox.style.color = "var(--text)";
+    }
 }
 
 function updateLabels() {
@@ -143,16 +167,66 @@ function updateLabels() {
         const k = el.getAttribute('data-key');
         if(d[k]) el.textContent = d[k];
     });
-    document.getElementById('door-status').textContent = d.door_idle;
-    applyTheme(false);
+    const sel = document.getElementById('color-choice');
+    sel.innerHTML = '';
+    COLOR_SYSTEM.forEach(c => sel.add(new Option(c, c)));
     updateUI();
 }
 
-function updateUI() {
-    document.getElementById('z-val').textContent = studio.tension.toFixed(6);
-    document.getElementById('w-val').textContent = (PHI/(studio.tension||0.001)).toFixed(2);
-    document.getElementById('scenery-display').innerHTML = COLOR_SYSTEM.map(c => `<div class="data-node"><div class="label">${c}</div><div class="value">${(studio.scenery[c]||0).toFixed(4)}</div></div>`).join('');
-    document.getElementById('chronicle-box').innerHTML = studio.chronicles.map(c => `<p><i>[${c.t}]</i> ${c.m}</p>`).reverse().join('');
+function applyTheme() {
+    studio.tone = document.getElementById('ui-tone').value;
+    const theme = TONES[studio.tone];
+    const root = document.documentElement;
+    Object.keys(theme).forEach(key => root.style.setProperty(`--${key}`, theme[key]));
+    save();
+}
+
+function writeChronicle(msg){
+    if(!studio.chronicles) studio.chronicles = [];
+    studio.chronicles.push({t: new Date().toLocaleTimeString(), m: msg});
+    if(studio.chronicles.length>100) studio.chronicles.shift();
+    updateUI();
+}
+
+function paintOnCanvas(sign){
+    const c = document.getElementById('color-choice').value;
+    const v = Math.abs(parseFloat(document.getElementById('brush-intensity').value));
+    if (!isNaN(v)) {
+        studio.scenery[c] = Math.max(0, (studio.scenery[c] || 0) + (v * sign));
+        studio.tension = Math.abs((studio.tension + (v / 1000)) % (PHI * 2));
+        writeChronicle(studio.lang === 'jp' ? `${v} ${c} を積み込み (ヴァンニング) しました` : `Vanned ${v} ${c}`);
+        save(); updateUI();
+    }
+}
+
+// 輸出 (ポートAへセーリング)
+function transferToPortA() {
+    const c = document.getElementById('color-choice').value;
+    const v = Math.abs(parseFloat(document.getElementById('brush-intensity').value));
+    if (isNaN(v) || v <= 0) return;
+    if ((studio.scenery[c] || 0) < v) { alert("Insufficient balance"); return; }
+
+    studio.scenery[c] -= v;
+    const packet = { unit: c, amount: v, timestamp: Date.now(), sender: "PORT_B" };
+    localStorage.setItem('TR_Bridge_to_A', JSON.stringify(packet));
+    writeChronicle(studio.lang==='jp' ? `${v} ${c} が ポートA へ向けて出港 (セーリング) しました` : `Sailed ${v} ${c} to PORT A`);
+    save(); updateUI();
+}
+
+// 輸入 (アライバル・デヴァンニング)
+function checkAndDevan() {
+    const incoming = localStorage.getItem('TR_Bridge_to_B');
+    if (!incoming) {
+        alert(studio.lang==='jp' ? "入港中の荷物はありません" : "No incoming cargo");
+        return;
+    }
+    const p = JSON.parse(incoming);
+    studio.scenery[p.unit] = (studio.scenery[p.unit] || 0) + p.amount;
+    studio.tension = Math.abs((studio.tension + (p.amount / 1000)) % (PHI * 2));
+    
+    localStorage.removeItem('TR_Bridge_to_B');
+    writeChronicle(studio.lang==='jp' ? `${p.amount} ${p.unit} を入港 (アライバル) し、積み下ろし (デヴァンニング) しました` : `Arrived and Devanned ${p.amount} ${p.unit}`);
+    save(); updateUI();
 }
 
 function showPane(id) {
@@ -162,61 +236,19 @@ function showPane(id) {
     document.getElementById('btn-' + id).classList.add('active');
 }
 
-async function processIncomingLetter() {
-    const status = document.getElementById('door-status');
-    const syncMsg = document.getElementById('sync-msg');
-    const d = DICTIONARY[studio.lang];
-    
-    const packet = JSON.parse(localStorage.getItem('TR_Bridge_to_Plus'));
-    
-    if (packet) {
-        status.textContent = studio.lang==='jp'?"状態: 積み下ろし中 (Devanning)...":"Status: DEVANNING...";
-        await new Promise(r => setTimeout(r, 1000));
-
-        const unit = packet.unit;
-        const amount = packet.amount;
-        
-        if (studio.scenery[unit] !== undefined) {
-            studio.scenery[unit] += amount;
-            studio.tension = Math.abs((studio.tension + (amount / 1000)) % (PHI * 2));
-            
-            localStorage.removeItem('TR_Bridge_to_Plus');
-            
-            writeChronicle(studio.lang==='jp'?`${amount} ${unit} の積み下ろしを完了しました`:`Completed devanning of ${amount} ${unit}.`);
-            status.textContent = d.door_idle;
-            syncMsg.textContent = studio.lang==='jp'?"コンテナを入荷しました":"Container arrived.";
-            save(); updateUI();
-        }
-    } else {
-        syncMsg.textContent = studio.lang==='jp'?"待機中：船影が見えません":"Waiting: No arrival detected.";
-    }
-}
-
 function executeClean() {
-    if(!confirm(studio.lang==='jp'?"港をリセットしますか？":"Reset Port?")) return;
+    if(!confirm(studio.lang==='jp'?"港を掃除しますか？":"Clean Port?")) return;
     studio.scenery = Object.fromEntries(COLOR_SYSTEM.map(c => [c, 0]));
     studio.tension = 0.05;
     studio.chronicles = [];
+    writeChronicle(studio.lang==='jp' ? "港を掃除しました" : "Port cleaned");
     save(); updateUI();
 }
 
-window.addEventListener('storage', (e) => {
-    if (e.key === 'TR_Bridge_to_Plus') {
-        processIncomingLetter();
-    }
-});
-
-function writeChronicle(msg){
-    studio.chronicles.push({t: new Date().toLocaleTimeString(), m: msg});
-    if(studio.chronicles.length>100) studio.chronicles.shift();
-    updateUI();
-}
-
 document.addEventListener('DOMContentLoaded', () => { 
-    document.getElementById('ui-lang').value = studio.lang;
-    document.getElementById('ui-tone').value = studio.tone;
-    updateLabels(); 
-    processIncomingLetter();
+    updateLabels();
+    applyTheme();
+    setInterval(updateUI, 2000); // 2秒おきにチェック
 });
 </script>
 </body>
